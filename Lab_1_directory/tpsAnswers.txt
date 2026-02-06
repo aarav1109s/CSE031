@@ -1,0 +1,49 @@
+Name: Aarav
+Partner names: Max, Phillip, Zaid, Jovanny
+
+TPS 1:
+
+https://www.youtube.com/watch?v=aKRYQsKR46I
+https://www.youtube.com/watch?v=cDcS6iL1G4I
+https://www.youtube.com/watch?v=7yPgDymjppU
+
+
+TPS2:
+
+1. How can you open a terminal from your Linux/Mac/Windows computer?
+    You can open a terminal in Windows using Windows key + R and searching "cmd".
+a. Can you open more than 1 terminal at the same time?
+    Yes you can.
+b. Why do you think you want to open more than 1 terminal at the same time?
+    So you can run, test, and debug code all at the same time.
+
+2. In the terminal, how can you tell what are contents inside the current directory (i.e., what is the command)?
+    By typing the command "ls".
+
+3. From your current directory, how can you navigate to Desktop directory?
+    First go to the terminal and type "cd Lab_1 directory"
+
+4. While you are in Desktop, create a new directory called CSE31. How do you do this?
+    By typing "mkdir CSE31" in the terminal.
+
+TPS 3:
+
+1. Independently find 2 online references on how to use GCC in a Linux/Mac/PowerShell terminal.
+    https://www.youtube.com/watch?v=ZjggZeMQMhU
+    https://www.youtube.com/watch?v=jCbawRqwWXU
+2. Share what you have found with your partners and save your results in the bookmark of your browser.
+You will refer to these references to answer the following questions.
+3. What command do you type in the terminal to compile your main.c?
+    You type "gcc main.c -o main".
+4. How do you know if your program has compiled successfully?
+    If there are no errors and produces an executeable file.
+5. What does the –c flag do in gcc?
+    Tells the compiler to compile the source file into an object file without linking, producing a .o file instead of an executable.
+6. What does the –g flag do in gcc?
+    It debugs information in the compiled program so it can be used with a debugger like gdb.
+7. How do you change the executable name from main to cselab1?
+    By typing a command such as this "gcc main.c -o cselab1"
+8. What happens when you compile your code by typing gcc main.c only?
+    GCC compiles and links the program successfully but creates an executable with the default name a.out.
+9. Now, let us run the program you have just compiled. What command do you use?
+    You run the program using "./a.out".
