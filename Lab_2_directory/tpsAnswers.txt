@@ -1,0 +1,79 @@
+Name: Aarav Sharma
+
+Partners: Channu, Saketh, Revant
+
+1. Independently search the internet for 3 online tutorials on how to setup and use GDB (or LLDB) in
+your system:
+    https://www.youtube.com/watch?v=v_C1cvo1biI
+    https://www.youtube.com/watch?v=8ZUxApnYX90
+    https://www.youtube.com/watch?v=3BkEOvI36Ds
+
+TPS 2:
+
+1. How do you compile your punishment.c so that you can debug it using GDB (or LLDB for MAC)?
+    Compile it with debugging symbols using gcc -g punishment.c -o punishment (or clang -g punishment.c -o punishment on Mac) so you can debug it with GDB or LLDB.
+
+2. Once punishment.c is compiled, how do you load it in GDB (or LLDB for MAC)? Try it with your
+program.
+    Load it by running `gdb ./punishment` (or `lldb ./punishment` on Mac) in the terminal from the directory where the compiled program is located.
+
+3. Once punish is loaded, how do you run it in GDB (or LLDB for MAC)? Try to run your punish.
+    Once it’s loaded in GDB (or LLDB), run the program by typing run (or just r) at the debugger prompt.
+
+4. What are breakpoints? How do you set a breakpoint at a certain line of your program? Try to set a
+breakpoint in punishment.c where the for loop begins.
+    Breakpoints pause program execution at a specific line, and you set one by typing break <line_number> in GDB (or breakpoint set --line <line_number> in LLDB), such as at the line where the for loop starts.
+
+5. Now run the program again. It should stop at the breakpoint you set in Q4. From here, how do you run
+the program line by line? Try to run the next 3 lines with your program.
+    After it stops at the breakpoint, run the program line by line by typing next (or n) in GDB/LLDB, and type it three times to execute the next three lines.
+
+6. While you are still running punish line by line, how can you see the value of a variable? Pick 3 variables
+in your program and display them in the terminal one by one.
+    While stepping through the program, you can see a variable’s value by typing `print variable_name` (or `p variable_name`) in GDB/LLDB, and repeat this for each of the three variables you want to display.
+
+
+7. Now that you are tired of running line by line, how do you let the program finish its run? Try to finish
+running your punish.
+    To let the program finish running, type `continue` (or `c`) in GDB/LLDB to resume execution until the program ends or hits another breakpoint.
+
+
+8. How do you exit from GDB (or LLDB for MAC)?
+    To exit GDB or LLDB, type `quit` (or `q`) and press Enter.
+
+TPS 3:
+
+1. How many variables were declared in the first line of main()? How many of them are pointers (and
+what are they)?
+    In the first line of main(), four variables are declared (x, y, px, py), and two of them are pointers: px and py.
+
+2. What will be the values of x, y, and arr[0] if you run the program? Validate your answer by running
+the program. Why do you think it happens that way? You will need to insert printf statements to
+display those values.
+    If you run the program as written, x, y, and arr[0] will contain garbage (indeterminate) values because they are local variables that were declared but not initialized; 
+    this happens because variables with automatic storage in C are not given default values.
+
+3. How do you prevent x, y, and the content of arr from having unexpected values? Try to fix them in
+the program.
+    You prevent unexpected values by initializing x, y, and arr when declaring them, such as setting them to 0.
+
+4. The moment you have declared a variable, the program will allocate a memory location for it. Each
+memory location has an address. Now insert printf statements to display the addresses of x and y.
+    Use `printf` with the `&` operator and `%p` specifier, such as `printf("%p", (void*)&x);`, to display the addresses of `x` and `y`.
+
+5. Now insert code so that px points to x and py points to y. Print out the values and addresses of those
+pointers using only the pointer variables (yes, pointers have addresses too!). You should see that the value of
+px is equal to the address of x, and the same is true for py and y.
+    Set the pointers with px = &x; and py = &y;, then use printf to display px, py, *px, *py, and their addresses (e.g., &px, &py) 
+    to show that each pointer’s value equals the address of its corresponding variable.
+
+6. As we have learned in lectures, an array name can be used as a pointer to access the content of the array.
+Write a loop to output the contents of arr by using arr as a pointer (do not use [] in your loop).
+    Use a loop with pointer arithmetic like `printf("%d\n", *(arr + i));` to access each element without using `[]`.
+
+7. Are array names really the same as pointers? Let us find out! An array name points to the first element
+of an array, so arr should point to the address of arr[0]. Insert code to verify this.
+    Insert a `printf` statement to compare them, such as `printf("%p %p\n", (void*)arr, (void*)&arr[0]);`, which will show that `arr` and `&arr[0]` have the same address.
+
+8. Now print out the address of arr. Does the result make sense? Why?
+    Print it using `printf("%p\n", (void*)&arr);`; the result is similar to `arr` (and `&arr[0]`) because the array’s address is the same as the address of its first element, even though `&arr` is technically a pointer to the whole array type.

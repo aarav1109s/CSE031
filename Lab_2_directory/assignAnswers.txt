@@ -1,0 +1,23 @@
+Assignment 1
+
+1. The segmentation fault was caused by the line:
+   scanf("%d", input);
+
+2. The fix is:
+   scanf("%d", &input);
+
+3. The bug is that sum was passed by value, so changes made in
+   read_values did not affect the sum variable in main.
+
+4. The fix is to pass the address of sum (double *sum) and use
+   *sum inside the function to update it.
+
+Assignment 2
+
+1. When I entered “HELLO!” and “hello!”, the output was correct and printed “HELLO!hello!”.
+
+2. When I entered “HI!” and “hi!” without stopping the program, the output was incorrect because the append function did not add a null terminator ('\0'). 
+This caused leftover characters to appear. The fix is to add s1[s1len + s2len] = '\0'; after the loop.
+
+3. When I entered longer strings like “Hello! How are you?” and “I am fine, thank you!”, the output was incorrect 
+because str1 and str2 are only size 10, causing buffer overflow and undefined behavior.
