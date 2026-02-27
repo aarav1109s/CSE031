@@ -1,0 +1,161 @@
+Partners: Revant Saketh Channu
+Name: Aarav Sharma
+========================
+TPS 1
+
+1. Name the 3 pools for memory and what kind of variables are stored in each pool.
+
+There are three main memory pools in C:
+
+    Stack
+    Stores local variables
+    Stores function parameters
+    Automatically managed (created when function starts, destroyed when it ends)
+
+2. Heap
+
+    Stores dynamically allocated memory
+
+    Allocated using malloc(), calloc(), or realloc()
+
+    Must be manually freed using free()
+
+3. Data Segment
+
+    Stores global variables
+
+    Stores static variables
+
+    Stores string literals
+
+    Exists for the entire lifetime of the program
+
+2. mem.c Analysis
+
+a. How many variables are declared?
+
+    Three variables are declared in main:
+
+    int num
+
+    int *ptr
+
+    int **handle
+
+    Additionally, two blocks of memory are allocated dynamically using malloc().
+
+b. How many of them are pointers? What type does each pointer point to?
+
+    There are two pointer variables:
+
+    ptr → pointer to int
+
+    handle → pointer to pointer to int
+
+    ptr points to dynamically allocated integer memory.
+    handle points to dynamically allocated memory that stores a pointer to int.
+
+c. Which pool of memory are these variables stored in?
+
+    num → Stack
+
+    ptr → Stack
+
+    handle → Stack
+
+    Memory allocated using malloc() → Heap
+
+d. Which pool of memory will pointer ptr point to?
+
+    ptr points to memory allocated using malloc(), which is stored in the Heap.
+
+3. Memory Layout Explanation
+
+Stack:
+
+    num (stores 14)
+
+    ptr (stores address of heap memory)
+
+    handle (stores address of heap memory that stores ptr)
+
+Heap:
+
+    First allocation: stores integer value copied from num
+
+    Second allocation: stores the value of ptr (an address)
+
+Pointer Relationships:
+
+    ptr points to heap memory containing an integer.
+
+    handle points to heap memory containing the address stored in ptr.
+
+    *handle equals ptr.
+
+    **handle equals the integer value stored in heap (same as num).
+
+========================
+TPS 2
+
+1. What does NodeStruct.c do?
+
+    The program dynamically allocates memory for a struct Node on the Heap.
+
+    The struct contains:
+
+    int iValue
+
+    float fValue
+
+    struct Node *next
+
+    The program:
+
+    Allocates memory for one Node
+
+    Assigns values to iValue and fValue
+
+    Leaves next uninitialized unless explicitly set
+
+2. Printing Values and Addresses
+
+    The following were printed:
+
+    Value of head
+
+    Address of head
+
+    Value and address of iValue
+
+    Value and address of fValue
+
+    Value and address of next
+
+    Observations:
+
+    head is stored on the Stack.
+
+    The Node structure is stored on the Heap.
+
+    The structure members are stored contiguously in memory.
+
+    The addresses of iValue, fValue, and next are sequential (possibly with padding).
+
+3. Observations About Structure Storage
+
+    Structures are stored as a single block of contiguous memory.
+
+    The pointer head is stored on the Stack.
+
+    The actual struct Node is stored on the Heap.
+
+    head contains the address of the structure in Heap memory.
+
+    Using head->member accesses memory inside the allocated structure.
+
+    The relationship between head and the Node structure:
+
+    head holds the starting address of the structure.
+
+    The structure members are accessed relative to that address.

@@ -91,6 +91,7 @@ int main()
     else
         arr_odd = NULL;
 
+    printf("/n");
     /*************** YOU MUST NOT MAKE CHANGES BEYOND THIS LINE! ***********/
 
     printArr(arr, size, str1);

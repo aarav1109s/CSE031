@@ -20,9 +20,6 @@ char *append(char s1[], char s2[])
     {
         s1[k + s1len] = s2[k];
     }
-
-    s1[s1len + s2len] = '\0';
-
     return s1;
 }
 /*
@@ -34,8 +31,8 @@ them
 */
 int main()
 {
-    char str1[10];
-    char str2[10];
+    char str1[100];
+    char str2[100];
     while (1)
     {
         printf("str1 = ");
