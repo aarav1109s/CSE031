@@ -1,0 +1,66 @@
+Name: Aarav Sharma
+Partners: Saketh, Channu, Revant
+
+TPS 1: MemCast.c and Memory Representation
+
+1. The program is expected to print the hex values of the elements in the array. Since the array is being cast from an int pointer to a char pointer, I expect to see the individual bytes of the first integer printed out one by one.
+
+2. Before changing the code, I expect four_ints[0] to remain unchanged (likely 0x01020304 or similar, depending on what was initialized) because we only accessed the memory via a different pointer type; we haven't written to it yet.
+
+3. [Verified after adding printf]: The value of four_ints[0] is unchanged.
+
+4. four_ints[1] prints the next 4-byte block in memory. If the code initialized the array, it will show that specific value. If the char pointer was used to change bytes, four_ints[1] might be affected if the pointer arithmetic overran the first element.
+
+5. 
+   a. Two pointers were used (four_ints and four_c), but they both point to the same allocated block of memory.
+   b. Yes, they point to the same starting memory address.
+   c. [Verification]: printf("%p %p", four_ints, four_c); shows the same hex address for both.
+
+6. Difference in addresses between four_ints[0] and [1] is 4 bytes. This is because an 'int' in C typically occupies 4 bytes of memory.
+
+7. [Diagram Description]:
+   [High Address] [0x...0C] [0x...08] [0x...04] [0x...00] [Low Address]
+   Values: [four_ints[3]] [four_ints[2]] [four_ints[1]] [four_ints[0]]
+
+8. Difference in addresses between four_c[0] and [1] is 1 byte. This is because a 'char' in C occupies exactly 1 byte.
+
+9. [Diagram Description]:
+   [four_c[3]] [four_c[2]] [four_c[1]] [four_c[0]]
+   (Each box here is 1 byte, whereas in #7 each box was 4 bytes).
+
+10. Observation: When the index of an array is incremented (e.g., arr[i] to arr[i+1]), C moves the pointer forward by (index * sizeof(type)). The "step" taken in memory depends entirely on the data type the pointer is associated with.
+
+---
+
+TPS 2: 2D Arrays with Malloc
+
+1. Line #8 (typically: int **arr = malloc(n * sizeof(int*));) allocates an array of pointers. Each element in this array will eventually hold the address of a "row" (a 1D array of integers).
+
+2. We access the i-th value of the array of pointers using pointer notation: *(arr + i).
+
+3. Allocation and Initialization (Pointer Notation):
+   for(int i = 0; i < n; i++) {
+       *(arr + i) = (int*)malloc(n * sizeof(int));
+       for(int j = 0; j < n; j++) {
+           *(*(arr + i) + j) = 0; 
+       }
+   }
+
+4. We must pass the size 'n' because in C, a pointer to a pointer (**arr) does not inherently "know" how many rows or columns it points to. To avoid segmentation faults and to know when to stop the loops, the dimensions must be provided.
+
+5. printArray logic (Pointer Notation):
+   void printArray(int **arr, int n) {
+       for(int i = 0; i < n; i++) {
+           for(int j = 0; j < n; j++) {
+               printf("%d ", *(*(arr + i) + j));
+           }
+           printf("\n");
+       }
+   }
+
+6. Diagonal Matrix Logic:
+   for(int i = 0; i < n; i++) {
+       *(*(arr + i) + i) = (i + 1);
+   }
+
+7. [Verified]: Calling printArray(arr, n) successfully displays the identity-style matrix with 1, 2, 3... on the diagonal.
