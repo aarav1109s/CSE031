@@ -1,0 +1,117 @@
+================================================================================
+Lab 05: Intro to MIPS - TPS Answers
+================================================================================
+
+--------------------------------------------------------------------------------
+TPS 1
+--------------------------------------------------------------------------------
+
+1. What does MARS stand for?
+   MARS stands for MIPS Assembler and Runtime Simulator. It is a development
+   environment for MIPS assembly language that simulates a MIPS processor.
+
+2. Download and run MARS
+   (Record with your group: Get MARS from the link in Announcement 09 on
+   CatCourses. Download the .jar file. Install the correct Java version as
+   specified in Announcement 09. Run MARS by double-clicking the .jar file.)
+
+3. Tutorial materials
+   (Record with your group: Downloaded MARS Tutorial.pdf and Fibonacci.asm
+   from the assignment page and saved them in the Lab_5 folder.)
+
+4. myFirstExample.s
+   (Record with your group: Downloaded myFirstExample.s from the assignment
+   page and saved it in the Lab_5 folder. The .asm and .s extensions are
+   equivalent for MIPS assembly source files.)
+
+5. Part 1: Basic MARS Use (using Fibonacci.asm)
+   a. How do you load an assembly file?
+      File -> Open (or Ctrl+O), then select the .asm or .s file.
+
+   b. How do you assemble (compile) the program?
+      Run -> Assemble (or click the Assemble button / use the toolbar).
+
+   c. How do you run the assembled program?
+      Run -> Go (or click the Run button).
+
+   d. Can you run a program before assembling it?
+      No. The program must be assembled first. Running without assembling
+      will either do nothing or run the previously assembled code.
+
+   e. If you want to run the assembled program line by line, how do you do it?
+      Run -> Step (or the Step button). This executes one instruction at a time.
+
+   f. How do you run the program again after it has finished running?
+      Run -> Run again (or Reset then Run). You can also use Run -> Reset
+      to clear state, then Run -> Go to start from the beginning.
+
+6. myFirstExample.s
+   (Discuss with your group: Load the file, assemble, and run it. Observe
+   the Execute tab and registers. Record what the program does and any
+   observations from your discussion.)
+
+--------------------------------------------------------------------------------
+TPS 2
+--------------------------------------------------------------------------------
+
+1. What do the .data, .word, .text directives mean?
+   .data  - Marks the start of the data section. You put global data here:
+            variables, constants, and labels that refer to memory (e.g., n: .word 13).
+   .word  - Reserves one or more 4-byte words in the data section. Used to
+            store integers or addresses.
+   .text  - Marks the start of the code (instruction) section. You put your
+            executable MIPS instructions here.
+
+2. What does line 10 do?
+   Line 10 is: beq $t3, $0, finish
+   It is a branch-if-equal: if $t3 equals $0 (zero), the program branches to
+   the label "finish". Here $t3 holds the loop counter (n); when it reaches 0,
+   the loop exits and the program goes to finish to print the result.
+
+3. What does line 15 do?
+   Line 15 is: j fib
+   It is an unconditional jump back to the label "fib". This continues the
+   loop: after updating the Fibonacci values and decrementing the counter,
+   execution jumps to the top of the loop.
+
+4. How do you set a breakpoint in MARS? Steps to set a breakpoint on line 15:
+   - Open the program in MARS and assemble it.
+   - In the left margin (gutter) next to line 15, click once. A red dot
+     appears indicating a breakpoint.
+   - Alternatively: right-click on line 15 and choose "Set Breakpoint."
+   - When you run the program (Run -> Go), execution will pause when it
+     reaches line 15.
+
+5. After the program stops at a breakpoint:
+   - To continue: Run -> Run (or Go). Execution continues until the next
+     breakpoint or end of program.
+   - To step through: Run -> Step. Each Step runs one instruction.
+
+6. Finding and modifying register contents in MARS:
+   - To see the content of a register: In the Execute tab, look at the
+     "Registers" pane. Registers and their current values are listed.
+   - To change a register manually: Double-click the value in the Registers
+     pane for that register, type the new value (decimal or hex), and press
+     Enter.
+
+7. Address of n and calculating the 13th Fibonacci number:
+   In MARS, the data segment starts at 0x10010000 by default. The label "n"
+   is the first (and only) word in .data, so n is stored at address 0x10010000.
+   You can confirm this in the Data Segment window after assembling.
+   To get the 13th Fibonacci number: Set the value at the memory location for
+   "n" to 12 (since we want fib[12] when counting fib[0], fib[1], ... as the
+   first, second, third, ...). In the Data Segment, double-click the value at
+   the address for n and change it to 12. Run the program; it will compute
+   fib[12] = 144 (the 13th Fibonacci number).
+
+8. The syscall instruction (lines 19 and 21):
+   syscall is a trap to the operating system (kernel). The service performed
+   depends on the value in $v0 (and sometimes other registers like $a0).
+   - Line 18 sets $v0 = 1 (print integer). Line 19: syscall prints the integer
+     in $a0 (the computed Fibonacci number).
+   - Line 20 sets $v0 = 10 (exit). Line 21: syscall terminates the program.
+   To use syscall: load the service number into $v0, set any arguments (e.g.,
+   $a0 for print int), then execute syscall. See Help -> Syscalls in MARS for
+   the full list of services.
+
+================================================================================
