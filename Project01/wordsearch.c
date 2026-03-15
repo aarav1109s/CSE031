@@ -177,7 +177,7 @@ void searchPuzzle(char** arr, char* word) {
 
     if (found) {
         printf("Word found!\n");
-        printf("\nPrinting the search path:\n");
+        printf("Printing the search path:\n");
         for (i = 0; i < bSize; i++) {
             for (j = 0; j < bSize; j++) {
                 printf("%d", *(*(pathGrid + i) + j));
