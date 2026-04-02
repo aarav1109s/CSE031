@@ -1,0 +1,53 @@
+Name: Aarav Sharma
+Partners: Revant, Channu, Saketh
+
+TPS 1
+-----
+1. Text Segment starts at 0x00400000. Data Segment starts at 0x10010000 (MARS default; confirm in the Execute tab after Assemble).
+
+2. Basic (True Assembly) shows the real machine code: each line is one 32-bit instruction word. Source (MIPS Assembly) can be pseudoinstructions (e.g. move, la) that the assembler expands into one or more real instructions, so one Source line may correspond to multiple code words and is not always 1:1 with a single machine-code row.
+
+3. The difference between two consecutive row addresses in the Data Segment is 0x4 (4 bytes).
+
+4. There are four byte columns per row (one word = 4 bytes per address line).
+
+5. Each row is one word (4 bytes), so advancing one row advances the address by 4—the step between addresses matches the four bytes shown in that row.
+
+6. In .data:  m: .word 20
+
+7. After assembling fib.s, variable m is stored at address 0x10010004. (Labels are laid out in order: n at 0x10010000, then m at the next word.)
+
+8. str1: .asciiz "I love CSE31!"
+
+9. The bytes of str1 begin at the label address 0x10010008. In the word-oriented Data Segment view, the string occupies the first three full words at:
+   0x10010008, 0x1001000C, and 0x10010010.
+   (The string is 13 characters plus a null terminator = 14 bytes, so the last bytes including '!' and 0x00 also appear in the next word at 0x10010014 if your MARS shows a fourth row—that is still part of the same .asciiz.)
+
+10. With ASCII enabled, the bytes appear in order: 49 20 6C 6F 76 65 20 43 53 45 33 31 21 00 (I, space, love, space, CSE31!, then null). That matches a C-style char array: contiguous bytes in memory, terminated by '\0'.
+
+11. Use syscall 4 (print string): load the address of the string into $a0 (e.g. la $a0, str1), set $v0 to 4, then syscall.
+
+12. la $t3, n puts the address of label n (a pointer to the word in the data segment) into $t3, not the value 13. After la, $t3 holds something like 0x10010000; lw $t3, 0($t3) loads the word at that address so $t3 becomes 13. Labels are addresses; use la then lw to use an initialized .word variable in arithmetic.
+
+
+TPS 2
+-----
+1. MIPS keeps the instruction set small (RISC): the datapath implements a few simple operations. Ordered comparisons are built from slt (set on less than) plus beq/bne, instead of many separate compare-and-branch opcodes, which would add hardware complexity for little gain.
+
+2. n: .word 25
+
+3. Declarations (in .data):
+   str1: .asciiz "Less than\n"
+   str2: .asciiz "Less than or equal to\n"
+   str3: .asciiz "Greater than\n"
+   str4: .asciiz "Greater than or equal to\n"
+
+4. Read integer: li $v0, 5 followed by syscall. The typed integer is returned in register $v0.
+
+5. Compare input (say in $t0) to n (in $t1) with slt $t2, $t0, $t1 so $t2 is 1 if input < n. Branch if nonzero to print str1 ("Less than"); otherwise fall through (or branch) to print str4 for the >= case.
+
+6. If input is not less than n, then input >= n, so print str4 ("Greater than or equal to") with syscall 4 after la $a0, str4.
+
+7. Comment out the step 5–6 code. Use slt $t2, $t1, $t0 so $t2 is 1 when n < input, i.e. input > n. If $t2 != 0, print str3 ("Greater than"); otherwise input <= n.
+
+8. For the else case (input <= n), print str2 ("Less than or equal to") with syscall 4 and la $a0, str2. (Implemented in compare.s as the active path when input is not greater than n.)
