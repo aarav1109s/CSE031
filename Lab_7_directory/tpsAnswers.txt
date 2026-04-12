@@ -1,0 +1,118 @@
+Name: Aarav Sharma
+Partners: Channu, Saketh Revant
+================================================================================
+TPS 1
+================================================================================
+1. Procedures, functions, and methods
+   - Procedure: a general name for a callable block of code; often used when the
+     routine may not return a value (void) or when speaking about calling
+     convention / control flow, not only math.
+   - Function: usually a routine that returns a value to its caller and is
+     meant to behave like a mathematical function (same inputs → same result),
+     though languages differ on syntax.
+   - Method: a function or procedure that is associated with an object or class
+     (e.g., OOP); it receives a hidden or explicit receiver (this/self).
+
+2. Execution order
+   Agree: instructions are normally executed in memory order unless a branch
+   (beq, bne, etc.) or jump (j, jal, jr) changes the PC.
+
+3. proc1.c
+   See proc1.c in this folder: it loads m = 10 and n = 5, calls sum (same as
+   label SUM), and prints the result with printf.
+
+4. Label SUM (in the provided proc1.s)
+   SUM begins on the line with the label SUM (line 20 in the starter file).
+   That instruction is: add $v0, $a0, $a1 — it places m + n into $v0.
+
+5. Using j instead of jr $ra
+   No, not in general. j jumps to a fixed address/label. SUM is called from
+   different call sites in larger programs, so the “line after the call” is not
+   always the same. jr $ra returns to whatever address was placed in $ra for
+   this invocation. A fixed j would only work if SUM were called from exactly
+   one place forever.
+
+6. Saving the return address before SUM (when using j SUM)
+   For a plain j (not jal), the hardware does not save a return address. You must
+   set $ra yourself before j SUM so that jr $ra in SUM can return correctly.
+   In the starter code that is attempted at the line:
+       addi $ra, $zero, 0
+   (replace 0 with the correct address). The address saved is the instruction
+   address where execution should resume after SUM — normally the instruction
+   immediately after j SUM (the addi that prepares the syscall argument).
+   It must be a valid word-aligned address in the text segment; 0 is invalid.
+
+7. Running before fixing $ra
+   MARS will fault / report an error when SUM executes jr $ra with a bad $ra
+   (e.g., 0x00000000): the processor tries to fetch the “next” instruction from
+   an invalid or non-code address.
+
+8. Correct return address from SUM
+   In the Text Segment window, find the address of the instruction immediately
+   after j SUM (the addi $a0, $v0, 0 that sets up the print). That address is
+   what should be loaded into $ra before jumping to SUM.
+
+9. After patching $ra manually
+   Once $ra holds that address, jr $ra returns to the right place. You should
+   verify in the Text Segment that $ra matches that instruction’s address.
+   Note: if the code is edited and reassembled, instruction addresses can move,
+   so hard-coding addresses is fragile (which motivates jal).
+
+10. After the final fix and run
+    With correct linkage, SUM computes 10 + 5 = 15; the program prints 15.
+
+11. Operator the assembler can use
+    Use jal (jump and link): it places the address of the next instruction into
+    $ra and jumps to the label. That replaces manual $ra bookkeeping for a
+    simple call.
+
+12. jal version
+    Use jal SUM instead of j SUM, and comment out / remove the manual addi $ra
+    line. SUM still ends with jr $ra.
+
+================================================================================
+TPS 2
+================================================================================
+
+1. proc2.c trace and output
+   x = 5, y = 10.
+   sum(5): m = 15, return n + sub(m + n) = 5 + sub(20) = 5 + 18 = 23.
+   y = y + x + sum(x) = 10 + 5 + 23 = 38.
+   The program prints 38. (Verified by compiling and running proc2.c.)
+
+2. MAIN in proc2.s vs C
+   MAIN loads x and y from .data into $s0 and $s1, calls SUM with $a0 = x,
+   then does y = y + x + (return value in $v0), prints y with syscall 1, and
+   jumps to END. That matches the C control flow.
+
+3. Why SUM “knows” where to return; what breaks after SUB
+   MAIN used jal SUM, so $ra held the return address into MAIN until SUM
+   executed jal SUB. jal SUB overwrites $ra with the address inside SUM to
+   return from SUB. After SUB returns, $ra no longer holds the address back to
+   MAIN unless SUM saved the old $ra before calling SUB. Fix: save $ra on the
+   stack (or in a callee-saved register after saving) before jal SUB, then restore
+   before jr $ra.
+
+4. $a0 overwritten for SUB vs original n of SUM
+   SUM must pass (m + n) to SUB in $a0, which destroys SUM’s original n in $a0.
+   Fix: save n (e.g., on the stack or in a saved register) before changing $a0,
+   then after SUB use the saved n when forming n + sub(...). A stack frame scales
+   to many nested calls without running out of temporaries.
+
+5. Line 24: lw $s0 for m in SUM
+   $s0 still holds MAIN’s x. Executing lw $s0, ... in SUM overwrites x with m.
+   That violates the convention that callee must preserve caller’s $s0–$s7
+   unless it saves/restores them. Fix: SUM’s prologue saves caller’s $s0 (and any
+   other $s registers it clobbers), epilogue restores them.
+
+6. Prologue / epilogue (SUM backs up three values before jal SUB)
+   Before jal SUB, SUM should save at least: (1) return address $ra for return
+   to MAIN, (2) original n (original $a0), (3) caller’s $s0 (MAIN’s x). SUB’s
+   own save/restore of $s0 is for SUB’s temporary use of $s0 and is separate.
+   See the corrected proc2.s: stack frame in SUM with sw for $ra, saved $s0,
+   saved n; epilogue restores them and adjusts $sp.
+
+================================================================================
+Collaboration
+================================================================================
+(No collaborators listed — add names here if applicable.)
