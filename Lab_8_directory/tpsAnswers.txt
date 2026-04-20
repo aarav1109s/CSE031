@@ -1,0 +1,118 @@
+Name: Aarav Sharma
+Partners: (fill in lab partners / collaborators for CatCourses)
+================================================================================
+TPS 1 — fib.s and user input
+================================================================================
+1. Program overview
+   fib.s initializes two running values in $t0 and $t1 (starting from 0 and 1),
+   then loops n times: each iteration forms the next Fibonacci pair with
+   $t2 = $t1 + $t0, shifts the pair forward, and decrements the counter in $t3.
+   After the loop, it prints the string str1, a newline, and the value in $t0
+   (which is F(n) for the iterative scheme used in the starter file).
+
+2. Making n generic
+   Instead of loading n from static memory, the program should obtain n from
+   the user so any nonnegative loop count can be chosen at run time.
+
+3. Prompt
+   Use syscall 4 (print string): load the address of the prompt into $a0, set
+   $v0 to 4, then syscall.
+
+4. Reading an integer into $t3
+   Use syscall 5 (read integer). Set $v0 to 5 and execute syscall; the integer
+   read is returned in $v0. Move that value into $t3 (for example
+   move $t3, $v0) so the rest of the program still uses $t3 as the counter.
+
+5. Declaring n in .data / la and lw
+   Once n comes from the keyboard, you do not need a separate .word n in .data
+   for the counter value. Comment out (or remove) n and the la/lw pair that
+   loaded n into $t3 so they do not overwrite the user’s input.
+
+6. Testing
+   Reassemble in MARS and try several small values. Compare against the
+   original fib.s for the same n (for example n = 13 should still print 233
+   before the final newline, given the same initialization and loop structure).
+
+================================================================================
+TPS 2 — recursion.c / recursion.s
+================================================================================
+1. Trace for input 5 (without running)
+   recursion(n) returns 0 for n == 0, -1 for n == -1, and otherwise
+   recursion(n-1) + recursion(n-2).
+   r(0)=0, r(-1)=-1, r(1)=r(0)+r(-1)=-1, r(2)=r(1)+r(0)=-1,
+   r(3)=-2, r(4)=-3, r(5)=r(4)+r(3)=-5.
+   Expected printed value: -5.
+   (Running recursion.c with 5 typed at the prompt should print -5.)
+
+2. main in recursion.s (compare to C)
+   main should print the same prompt as the C program, read an int, call
+   recursion with that int as the argument, print the integer result, then
+   exit. In MIPS, the argument is passed in $a0 and the return value is
+   produced in $v0, matching the usual calling convention for a one-argument
+   int function.
+
+3. Prompt in MIPS
+   Same as TPS 1: load the address of the .asciiz prompt into $a0, li $v0, 4,
+   syscall.
+
+4. Register for the input value
+   After syscall 5, the value is in $v0. Move it into $a0 so it becomes the
+   argument n for jal recursion.
+
+5. Printing the return value
+   The return value is in $v0. Syscall 1 also uses $a0 for the value to print,
+   so copy $v0 into another register (often a temporary like $t0) first, then
+   move that into $a0 before syscall 1. That way you do not lose the return
+   value while preparing the syscall.
+
+6. (Implementation)
+   See recursion.s: move $t0, $v0; move $a0, $t0; li $v0, 1; syscall.
+
+7. Stack frame in recursion
+   This implementation reserves three 32-bit words (12 bytes): one slot for
+   the saved return address, one for the original n while making two calls,
+   and one for the result of the first recursive call after $v0 is reused.
+   The first value stored on the stack after adjusting $sp should be $ra
+   (sw $ra, …($sp)), because every jal overwrites $ra and you must remember
+   where to jr back to after the function finishes.
+
+8. Returning when n == 0
+   On the branch that detects n == 0, set li $v0, 0 so the function returns
+   0 in the conventional return-value register.
+
+9. Returning when n == -1
+   On the branch that detects n == -1, set li $v0, -1.
+
+10. Why save $a0 under not_zero
+    The first recursive call uses addi $a0, $a0, -1, which changes the
+    argument register. You still need the original n to compute n - 2 for the
+    second call, so the original $a0 must be preserved on the stack (or in a
+    callee-saved register) across the first jal.
+
+11. Updating the argument for the first recursive call
+    addi $a0, $a0, -1 (after saving the original n).
+
+12. After the first recursion returns
+    The result is in $v0, but the upcoming jal for the second call will destroy
+    $v0 when the inner invocation returns its own value. Store the first result
+    on the stack (or in a saved register) before the second jal.
+
+13. Argument for the second recursive call
+    Reload n from the stack (lw $a0, …) and then addi $a0, $a0, -2.
+
+14. Final return value after the second call
+    Reload the saved first result and add it to $v0 from the second call, e.g.
+    lw $t1, … then add $v0, $t1, $v0.
+
+15. Value restored at end_recur
+    Restore the saved $ra from the stack (lw $ra, …($sp)) before adjusting $sp
+    back and executing jr $ra. That address is where execution must continue
+    in the caller after this invocation of recursion returns.
+
+================================================================================
+Note on Individual Assignment (recursion1)
+================================================================================
+If your instructor distributes a different recursion1.c than the one in this
+folder, replace recursion1.c and update recursion1.s to match that C program
+while keeping the same MIPS calling conventions ($a0–$a3 arguments, $v0
+return, stack for $ra and callee-saved registers as needed).
