@@ -1,0 +1,61 @@
+Test Run 1 (matches assignment Sample Run 1)
+Input:
+5
+2
+22
+11
+7
+19
+2
+Expected: Original line, sorted descending 22 19 11 7 2, average prompt, output "17".
+
+Test Run 2 (matches assignment Sample Run 2 – invalid counts then all dropped)
+Input:
+0
+-3
+26
+5
+2
+22
+11
+7
+19
+-1
+6
+5
+Expected: Re-prompts until valid n and valid drop; ends with "All scores dropped!".
+
+Test Run 3 (single score, drop zero)
+Input:
+1
+42
+0
+Expected: Original "42", sorted "42", average "42".
+
+Test Run 4 (n = 25, drop 0 – enter scores 1,2,...,25 one per line)
+Input:
+25
+(then 25 lines: 1, 2, 3, ... 25)
+0
+Expected: Sum 325, average 325/25 = 13.
+
+Test Run 5 (drop = n - 1, one score kept)
+Input:
+4
+10
+20
+30
+40
+3
+Expected: Sorted 40 30 20 10; only 40 kept; average 40.
+
+Test Run 6 (invalid drop re-prompt)
+Input:
+3
+5
+5
+5
+-2
+4
+1
+Expected: Re-prompts drop until valid; sorted 5 5 5; drop 1 leaves two 5s; average 5.
