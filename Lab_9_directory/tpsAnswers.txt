@@ -1,0 +1,128 @@
+Name: Aarav Sharma
+Partners: (update after lab — TPS groups / collaboration policy)
+================================================================================
+TPS 1 — MIPS ↔ machine code (Lab 09, proc1.s)
+================================================================================
+1. MIPS_Reference_Sheet
+   Downloaded from CatCourses and used as the authority for opcodes, funct
+   codes, and instruction formats while answering the questions below.
+
+2. proc1.s in MARS
+   Opened proc1.s, assembled it, and stepped through the logic: it loads 25
+   into $s0, reads an integer into $s1, sets $t0 = 1 iff $s1 < $s0 (slt),
+   branches to LESS when $t0 != 0, otherwise falls through to GREQ, then
+   prints a string and exits via END.
+
+3. Text Segment after assembly
+   Compared Source, Basic (true assembly / expanded pseudos), and Code
+   columns so each source line maps to one or more 32-bit machine words.
+
+4. Bits per machine instruction
+   Every MIPS machine instruction is 32 bits (one word).
+
+5. Instruction formats (types)
+   There are three formats:
+   • R-type — all operands are registers; opcode 0x00 and funct select the
+     operation. Examples: add, slt.
+   • I-type — opcode plus two registers and a 16-bit immediate (used for
+     arithmetic with small constants and for loads/stores/branches).
+     Examples: addi, beq (and bne).
+   • J-type — opcode plus a 26-bit jump index. Examples: j, jal.
+
+6. Line #7 of proc1.s — addi $s0, $zero, 25
+   (a) Type: I-type. Four fields: opcode, rs, rt, immediate.
+
+   (b) From the MIPS sheet / encoding rules:
+       opcode (ADDI) = 0x08
+       rs  = $zero → register number 0 → 0x00
+       rt  = $s0   → register number 16 → 0x10
+       immediate = 25 → 0x0019 (fits in 16 bits, positive)
+
+   (c) Layout [31:26 opcode][25:21 rs][20:16 rt][15:0 imm]:
+       Binary:
+         001000 00000 10000 0000000000011001
+       Hex: 0x20100019
+       (Verify in Text Segment → Code for the word at the same address as
+       line #7 after assembly.)
+
+7. Address 0x00400010 in the Text Segment (default MARS .text at 0x00400000)
+   (a) In proc1.s this address holds the instruction that assembles from
+       line #14 (slt $t0, $s1, $s0). Machine code (hex): 0x0230402A
+       Binary (32 bits):
+         0000001000110000010000000101010
+
+   (b) Instruction type: R-type. You can tell because bits [31:26] are all
+       zero and the operation is selected by bits [5:0] (funct), not by a
+       non-zero primary opcode. This format has six named fields: opcode,
+       rs, rt, rd, shamt, funct.
+
+   (c) Field values (hex):
+       opcode = 0x00, rs = 0x11 ($s1), rt = 0x10 ($s0), rd = 0x08 ($t0),
+       shamt = 0x00, funct = 0x2A
+
+   (d) Operation: slt (set less than); funct 0x2A with opcode 0 decodes to
+       slt. Register use: rd = $t0, rs = $s1, rt = $s0 (first operand $s1,
+       second $s0, destination $t0).
+
+   (e) Final MIPS instruction: slt $t0, $s1, $s0 — same meaning as in the
+       Source column (Basic may show the same or expanded form depending on
+       how MARS labels that row).
+
+8. Line #17 of proc1.s — bne $t0, $zero, LESS
+   (a) Format: I-type branch encoding (same general I layout as other
+       immediates, but the “immediate” is a branch offset).
+
+   (b) opcode (BNE) = 0x05, rs = $t0 → 0x08, rt = $zero → 0x00
+
+   (c) If the branch is taken, control goes to label LESS. With default MARS
+       expansion (same instruction-count pattern as in the lab’s proc2
+       example), LESS begins at address 0x0040001C (confirm in the Address
+       column next to LESS:).
+
+   (d) No — the immediate field does not store the label’s full 32-bit
+       address. Branches are PC-relative: the hardware computes
+       target = (PC + 4) + (sign_extended(immediate) × 4), using the address
+       of the delay-slot PC+4 for the branch instruction.
+
+   (e) PC of bne = 0x00400014, so PC + 4 = 0x00400018. Target LESS =
+       0x0040001C. Byte offset = 0x0040001C − 0x00400018 = 4 bytes → word
+       offset = 1. So the signed immediate field value is 1 (0x0001).
+
+   (f) Machine word:
+       Binary:
+         000101 01000 00000 0000000000000001
+       Hex: 0x15000001
+       (Should match the Code column for the bne row.)
+
+9. Line #20 of proc1.s — j GREQ
+   (a) Format: J-type. Two logical fields in the word: 6-bit opcode and a
+       26-bit jump word index (address field).
+
+   (b) Opcode for j = 0x02 (binary 000010).
+
+   (c) Jump goes to label GREQ. After the five-word LESS block
+       (li, la×2, syscall, j END), GREQ: begins at 0x00400030 in the usual
+       MARS layout (confirm next to GREQ: in the Text Segment).
+
+   (d) The instruction provides 26 bits for the target index. Those 26 bits
+       are a word address inside the same 256 MB region as PC+4: the hardware
+       forms new_PC = (PC+4)[31:28] || (index << 2). Only 28 bits of the
+       target’s low part are encoded (4 bits come from PC+4), which keeps the
+       instruction in 32 bits and keeps jumps within one aligned 256 MB
+       segment. For PC+4 = 0x0040001C and target 0x00400030,
+       index = 0x00400030 >> 2 = 0x0010000C.
+       26-bit address field (binary, 26 bits):
+         00000100000000000000001100
+
+   (e) Full machine instruction:
+       Binary:
+         000010 00000100000000000000001100
+       Hex: 0x0810000C
+       (Compare to the Code column for the j instruction.)
+
+================================================================================
+Notes
+================================================================================
+• Always verify addresses and Code values in your own MARS session; different
+  assembler options or memory settings could shift labels slightly.
+• Update Partners / collaboration lines to match what you submit on CatCourses.

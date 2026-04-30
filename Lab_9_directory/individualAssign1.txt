@@ -1,0 +1,166 @@
+Individual Assignment 1 — proc2.s (MIPS ↔ machine code)
+========================================================
+Verify all machine words in MARS: Assemble → Text Segment → Code column.
+Assumes default MARS layout: kernel text base 0x00400000, data labels in
+0x10010000+ so each `la $a0, strN` expands to two instructions (lui + ori).
+
+Register numbers (for field values): $zero=0, $v0=2, $a0=4, $t0=8,
+$s0=16, $s1=17.
+
+-----------------------------------------------------------------------------
+LINE #7 — addi $s0, $zero, -15
+-----------------------------------------------------------------------------
+Step A — MIPS → fields (I-type: opcode | rs | rt | immediate)
+
+  • Instruction type: I-type (immediate arithmetic).
+  • Fields (4): opcode (6), rs (5), rt (5), immediate (16).
+
+  • opcode (ADDI) = 0x08  (binary 001000)
+  • rs  = $zero  → 0  (0x00)
+  • rt  = $s0    → 16 (0x10)
+  • immediate = -15 → signed 16-bit two’s complement = 0xFFF1
+        (binary: 1111111111110001)
+
+Step B — assemble fields into one 32-bit word
+
+  Layout: [31:26 opcode][25:21 rs][20:16 rt][15:0 imm]
+
+  Binary:
+    001000 00000 10000 1111111111110001
+
+  Grouped by 4 bits (hex):
+    0010 0000 0010 0001 1111 1111 1111 0001
+
+  Machine code (hex): 0x2010FFF1
+
+Step C — machine code → MIPS (decode)
+
+  • Bits [31:26] = 001000 → opcode 0x08 → ADDI.
+  • I-type: rs=0 → $zero, rt=16 → $s0, imm=0xFFF1 (sign-extends to -15).
+  • Operation: ADDI → mnemonic addi
+  • MIPS: addi $s0, $zero, -15  (matches Source column)
+
+-----------------------------------------------------------------------------
+LINE #14 — slt $t0, $s0, $s1
+-----------------------------------------------------------------------------
+Step A — MIPS → fields (R-type: opcode | rs | rt | rd | shamt | funct)
+
+  • Instruction type: R-type.
+  • Fields (6): opcode, rs, rt, rd, shamt, funct.
+
+  • opcode = 0x00
+  • rs  = $s0 → 16 (0x10)
+  • rt  = $s1 → 17 (0x11)
+  • rd  = $t0 → 8  (0x08)
+  • shamt = 0 (0x00)   [shift amount unused for slt]
+  • funct (SLT) = 0x2A (binary 101010)
+
+Step B — machine word
+
+  Binary:
+    000000 10000 10001 01000 00000 101010
+
+  Hex: 0x0211402A
+
+Step C — decode
+
+  • [31:26]=0 and [5:0]=0x2A → SLT (R-type).
+  • rd=8→$t0, rs=16→$s0, rt=17→$s1.
+  • MIPS: slt $t0, $s0, $s1
+
+-----------------------------------------------------------------------------
+LINE #17 — beq $t0, $zero, LEEQ
+-----------------------------------------------------------------------------
+Step A — text addresses (count assembled words in order)
+
+  Addr        Instruction (as assembled)
+  0x00400000  addi $s0, $zero, -15
+  0x00400004  addiu $v0, $zero, 5      (from li $v0, 5)
+  0x00400008  syscall
+  0x0040000C  addu  $s1, $v0, $zero     (from move $s1, $v0)
+  0x00400010  slt $t0, $s0, $s1
+  0x00400014  beq $t0, $zero, LEEQ     ← this instruction
+  0x00400018  j GRT
+  0x0040001C  GRT: addiu $v0, $zero, 4 (from li $v0, 4)
+  ...         (la str1: 2 words), syscall, j END
+  0x00400030  LEEQ: addiu $v0, $zero, 4
+
+Step B — I-type branch fields
+
+  • opcode (BEQ) = 0x04  (binary 000100)
+  • rs = $t0  → 8  (0x08)
+  • rt = $zero → 0 (0x00)
+
+  Branch offset (signed word offset relative to PC+4 of the branch):
+    PC of beq     = 0x00400014
+    PC + 4        = 0x00400018
+    Target (LEEQ) = 0x00400030
+    Byte offset   = 0x00400030 − 0x00400018 = 0x18 (24 bytes)
+    Word offset   = 0x18 / 4 = 6  → immediate field = 6 (0x0006)
+
+  (We do NOT store the label’s absolute address in the immediate field;
+   BEQ encodes a PC-relative word offset so the code stays position-independent
+   within the same 256 MB region.)
+
+Step C — machine word
+
+  Binary:
+    000100 01000 00000 0000000000000110
+
+  Hex: 0x11000006
+
+Step D — decode
+
+  • [31:26] = 000100 → BEQ.
+  • rs=8→$t0, rt=0→$zero, imm=6 (positive).
+  • Target = (PC+4) + (6×4) = 0x00400018 + 0x18 = 0x00400030 → label LEEQ.
+  • MIPS: beq $t0, $zero, LEEQ
+
+-----------------------------------------------------------------------------
+LINE #20 — j GRT
+-----------------------------------------------------------------------------
+Step A — J-type fields
+
+  • Instruction type: J-type (opcode | address index, 26 bits).
+  • Two conceptual fields: 6-bit opcode + 26-bit word index (into the
+    256 MB segment aligned with PC+4’s bits [31:28]).
+
+  • opcode (J) = 0x02  (binary 000010)
+
+  • PC when the processor evaluates the jump uses PC of the j in the
+    delay-slot model for encoding: branch/jump target uses PC+4.
+    PC of `j` = 0x00400018  →  PC+4 = 0x0040001C
+
+  • Label GRT is at 0x0040001C (first instruction at GRT:).
+
+  • Address field (26-bit word index) = 0x0040001C >> 2 = 0x00100007
+
+    Binary (26 bits): 00000100000000000000000111
+
+  “Squeezing” the address: keep top 4 bits of PC+4 for the segment nibble;
+   only 26 bits × 4 bytes = 28 bits of intra-segment address are stored, so
+   all targets in that 256 MB chunk share the same high 4 bits of PC+4.
+
+Step B — machine word
+
+  [31:26] = 000010
+  [25:0]  = 0x00100007 (26-bit field)
+
+  Binary (32 bits):
+    000010 00000100000000000000000111
+
+  Hex: 0x08100007
+
+Step C — decode
+
+  • Opcode 0x02 → j.
+  • Concatenate PC+4[31:28] with (index << 2). Here PC+4 = 0x0040001C,
+    so high bits match and (0x00100007 << 2) = 0x0040001C → GRT.
+  • MIPS: j GRT
+
+-----------------------------------------------------------------------------
+Collaboration (fill as required by course policy)
+-----------------------------------------------------------------------------
+  • Given help to:
+  • Gotten help from:
+  • Collaborated with:
