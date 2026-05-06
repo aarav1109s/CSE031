@@ -9,7 +9,7 @@ str2: .asciiz "Original scores: "
 str3: .asciiz "Sorted scores (in descending order): "
 str4: .asciiz "Enter the number of (lowest) scores to drop: "
 str5: .asciiz "Average (rounded down) with dropped scores removed: "
-str_all_dropped: .asciiz "All scores dropped!\n"
+str_all_dropped: .asciiz "All scores dropped!"
 space: .asciiz " "
 newline: .asciiz "\n"
 
