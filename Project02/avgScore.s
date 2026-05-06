@@ -99,9 +99,6 @@ read_drop_prompt:
 	move $a0, $t6
 	li $v0, 1
 	syscall
-	li $v0, 4
-	la $a0, newline
-	syscall
 	j end
 	
 all_scores_dropped:
@@ -123,13 +120,17 @@ printArray:
 	move $t2, $0		# i = 0
 pa_loop:
 	beq $t2, $t1, pa_done
+	bgtz $t2, pa_space
+	j pa_after_space
+pa_space:
+	li $v0, 4
+	la $a0, space
+	syscall
+pa_after_space:
 	sll $t3, $t2, 2
 	add $t3, $t0, $t3
 	lw $a0, 0($t3)
 	li $v0, 1
-	syscall
-	li $v0, 4
-	la $a0, space
 	syscall
 	addi $t2, $t2, 1
 	j pa_loop

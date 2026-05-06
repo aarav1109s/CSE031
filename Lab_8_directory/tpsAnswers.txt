@@ -1,5 +1,5 @@
 Name: Aarav Sharma
-Partners: (fill in lab partners / collaborators for CatCourses)
+Partners: Cahnnu, Saketh, Revant
 ================================================================================
 TPS 1 — fib.s and user input
 ================================================================================

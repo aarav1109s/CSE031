@@ -1,65 +1,102 @@
-# recursion1.s — MIPS translation of recursion1.c (Lab 8 individual)
-# Classic recursive Fibonacci with MIPS calling conventions.
+# recursion1.s
+# MIPS translation of recursion1.c
 
 .data
-prompt:	.asciiz "Please enter a number: "
-nl:	.asciiz "\n"
+prompt: .asciiz "Please enter a number: "
+nl:     .asciiz "\n"
 
 .text
 .globl main
 
-main:	la	$a0, prompt
-	li	$v0, 4
-	syscall
+main:
+    # print prompt
+    la   $a0, prompt
+    li   $v0, 4
+    syscall
 
-	li	$v0, 5
-	syscall
-	move	$a0, $v0		# fib(n)
+    # read integer
+    li   $v0, 5
+    syscall
+    move $a0, $v0          # $a0 = x
 
-	jal	fib
+    # call recursion(x)
+    jal  recursion
 
-	move	$t0, $v0
-	move	$a0, $t0
-	li	$v0, 1
-	syscall
+    # print result
+    move $a0, $v0
+    li   $v0, 1
+    syscall
 
-	la	$a0, nl
-	li	$v0, 4
-	syscall
+    # print newline
+    la   $a0, nl
+    li   $v0, 4
+    syscall
 
-	li	$v0, 10
-	syscall
+    # exit
+    li   $v0, 10
+    syscall
 
-# int fib(int n); $a0 = n, returns $v0
-fib:	addiu	$sp, $sp, -12
-	sw	$ra, 8($sp)
-	sw	$s0, 4($sp)
 
-	beq	$a0, $zero, fib_ret0
-	li	$t0, 1
-	beq	$a0, $t0, fib_ret1
+# int recursion(int m)
+# argument: $a0 = m
+# return:   $v0
+recursion:
+    addiu $sp, $sp, -16
+    sw    $ra, 12($sp)
+    sw    $a0, 8($sp)
 
-	move	$s0, $a0		# callee-saved copy of n
+    # if (m == -1) return 3;
+    li    $t0, -1
+    beq   $a0, $t0, ret_3
 
-	addi	$a0, $s0, -1
-	jal	fib
-	sw	$v0, 0($sp)		# save fib(n-1)
+    # else if (m <= -2)
+    li    $t0, -2
+    ble   $a0, $t0, less_equal_neg2
 
-	addi	$a0, $s0, -2
-	jal	fib
-	lw	$t1, 0($sp)
-	add	$v0, $t1, $v0
-	j	fib_done
+    # else return recursion(m - 3) + m + recursion(m - 2);
 
-fib_ret0:
-	li	$v0, 0
-	j	fib_done
+    # first call: recursion(m - 3)
+    lw    $a0, 8($sp)
+    addi  $a0, $a0, -3
+    jal   recursion
 
-fib_ret1:
-	li	$v0, 1
+    # save recursion(m - 3)
+    sw    $v0, 4($sp)
 
-fib_done:
-	lw	$s0, 4($sp)
-	lw	$ra, 8($sp)
-	addiu	$sp, $sp, 12
-	jr	$ra
+    # second call: recursion(m - 2)
+    lw    $a0, 8($sp)
+    addi  $a0, $a0, -2
+    jal   recursion
+
+    # final result = recursion(m - 3) + m + recursion(m - 2)
+    lw    $t1, 4($sp)      # recursion(m - 3)
+    lw    $t2, 8($sp)      # original m
+    add   $v0, $t1, $v0
+    add   $v0, $v0, $t2
+    j     end_recursion
+
+
+less_equal_neg2:
+    # if (m < -2) return 2;
+    li    $t0, -2
+    blt   $a0, $t0, ret_2
+
+    # else return 1;   # this means m == -2
+    li    $v0, 1
+    j     end_recursion
+
+
+ret_3:
+    li    $v0, 3
+    j     end_recursion
+
+
+ret_2:
+    li    $v0, 2
+    j     end_recursion
+
+
+end_recursion:
+    lw    $ra, 12($sp)
+    addiu $sp, $sp, 16
+    jr    $ra

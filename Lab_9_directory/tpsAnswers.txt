@@ -1,5 +1,5 @@
 Name: Aarav Sharma
-Partners: (update after lab — TPS groups / collaboration policy)
+Partners: Channu, Saketh, Revant
 ================================================================================
 TPS 1 — MIPS ↔ machine code (Lab 09, proc1.s)
 ================================================================================

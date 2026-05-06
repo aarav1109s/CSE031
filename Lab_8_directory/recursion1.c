@@ -1,17 +1,24 @@
 #include <stdio.h>
 
-int fib(int n) {
-    if (n == 0)
-        return 0;
-    if (n == 1)
-        return 1;
-    return fib(n - 1) + fib(n - 2);
+int recursion(int m) {
+    if (m == -1)
+        return 3;
+    else if (m <= -2) {
+        if (m < -2)
+            return 2;
+        else
+            return 1;
+    } else
+        return recursion(m - 3) + m + recursion(m - 2);
 }
 
-int main(void) {
-    int n;
+int main() {
+    int x;
+
     printf("Please enter a number: ");
-    scanf("%d", &n);
-    printf("%d\n", fib(n));
+    scanf("%d", &x);
+
+    printf("%d\n", recursion(x));
+
     return 0;
 }
